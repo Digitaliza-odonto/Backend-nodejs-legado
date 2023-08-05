@@ -63,6 +63,15 @@ app.get('/teste-retornar/:CPF',async (req, res) => {
 
  });
 
+ app.post('/perfil-cpf/',async (req, res) => {
+  const { CPF } = req.body;
+  console.log(CPF)
+  console.log(await db('pacientes').where('cpf', CPF).select('*'))
+
+return res.json( await db('pacientes').where('cpf', CPF).select('*')); 
+
+});
+
  app.post('/consulta-nome/',async (req, res) => {
    
   const { Nome } = req.body;
