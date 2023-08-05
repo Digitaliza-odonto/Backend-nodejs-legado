@@ -47,9 +47,9 @@ app.get('/teste-retornar/:CPF',async (req, res) => {
  
  });
  
- app.post('/retornar/',async (req, res) => {
-   
+ app.post('/consulta-cpf/',async (req, res) => {
    const { CPF } = req.body;
+   console.log(CPF)
 
  return res.json( await db('pacientes').where('CPF', CPF).select('*')); 
 
@@ -86,6 +86,11 @@ app.post('/Criar_paciente', async (req, res) => {
     Cidade
   } = req.body;
 
+  var verifica = await db('pacientes').where('CPF', Cpf).select('*')
+console.log(verifica)
+  if (verifica.length > 0) {
+    return res.json({ 'pacienteCriado': false, "message":"Paciente com esse cpf já existe" });
+  }
  
   await db('pacientes').insert({
     Cpf,
@@ -109,7 +114,7 @@ app.post('/Criar_paciente', async (req, res) => {
     Cidade
   });
 
-  return res.json({ 'pacienteCriado': true });
+  return res.json({ 'pacienteCriado': true, "message": "Paciente criado com sucesso" });
 });
 
 

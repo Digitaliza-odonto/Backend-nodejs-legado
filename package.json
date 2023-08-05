@@ -1,10 +1,12 @@
 {
-  "name": "students-match",
+  "name": "prontuario-ufpel-backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "updb": "knex migrate:up 20200325225630_migration_init.js",
+    "restartdb": "knex migrate:down 20200325225630_migration_init.js && knex migrate:up 20200325225630_migration_init.js"
   },
   "author": "",
   "license": "ISC",
