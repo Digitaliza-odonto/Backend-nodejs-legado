@@ -46,6 +46,14 @@ app.get('/teste-retornar/:CPF',async (req, res) => {
   return res.json( await db('pacientes').where('CPF', req.params.CPF).select('*')); 
  
  });
+
+ app.get('/restardb',async (req, res) => { 
+  
+  await db.migrate.rollback();
+  await db.migrate.latest();
+  return res.json({"message":"banco de dados resetado"} ); 
+ 
+ });
  
  app.post('/consulta-cpf/',async (req, res) => {
    const { CPF } = req.body;
