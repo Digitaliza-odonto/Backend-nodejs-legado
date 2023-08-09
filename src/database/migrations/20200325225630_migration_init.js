@@ -20,10 +20,19 @@ exports.up = function(knex) {
         table.string('EndComplemento');
         table.string('Bairro');
         table.string('Cidade');
-    });
+    }).createTable('encaminhamentos', function (table) {
+        table.increments('id').primary();
+        table.string('CPF').references('CPF').inTable('pacientes').onDelete('CASCADE');
+        table.string('Data');
+        table.string('Especialidade');
+        table.string('Demanda');
+        table.string('Status');
+        
+    })
 };
 
 
 exports.down = function(knex) {
     return knex.schema
-    .dropTable("pacientes");};
+    .dropTable("pacientes")
+    .dropTable("encaminhamentos");};

@@ -41,99 +41,105 @@ app.get('/',async (req, res) => {
 
 app.use(express.json());
 
-app.get('/teste-retornar/:CPF',async (req, res) => { 
-  
-  return res.json( await db('pacientes').where('CPF', req.params.CPF).select('*')); 
  
- });
+//Pacientes ----------------------------------------------------------------------------------------------------------------------
+app.post('/pacientes/criar', async (req, res) => {
+  try {
+    const { Cpf, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
 
- app.get('/restardb',async (req, res) => { 
-  
-  await db.migrate.rollback();
-  await db.migrate.latest();
-  return res.json({"message":"banco de dados resetado"} ); 
- 
- });
- 
- app.post('/consulta-cpf/',async (req, res) => {
-   const { CPF } = req.body;
-   console.log(CPF)
+    const existingPatient = await db('pacientes').where('CPF', Cpf).select('*');
 
- return res.json( await db('pacientes').where('CPF', CPF).select('*')); 
+    if (existingPatient.length > 0) {
+      return res.json({ pacienteCriado: false, message: 'Paciente com esse CPF já existe' });
+    }
 
- });
+    await db('pacientes').insert({
+      Cpf, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade
+    });
 
- app.post('/perfil-cpf/',async (req, res) => {
-  const { CPF } = req.body;
-  console.log(CPF)
-  console.log(await db('pacientes').where('cpf', CPF).select('*'))
-
-return res.json( await db('pacientes').where('cpf', CPF).select('*')); 
-
-});
-
- app.post('/consulta-nome/',async (req, res) => {
-   
-  const { Nome } = req.body;
-
-  return res.json(await db('pacientes').where('Nome', 'LIKE', `%${Nome}%`).select('*'))
-});
-
-app.post('/Criar_paciente', async (req, res) => {
-  console.log(req.body);
-  const {
-    Cpf,
-    Nome,
-    Rg,
-    DataNasc,
-    Email,
-    Tel,
-    EstadoCivil,
-    Sexo,
-    NomeMae,
-    NomePai,
-    CorRaca,
-    PNE,
-    EnderecoTipo,
-    Cep,
-    Rua,
-    EndNumero,
-    EndComplemento,
-    Bairro,
-    Cidade
-  } = req.body;
-
-  var verifica = await db('pacientes').where('CPF', Cpf).select('*')
-console.log(verifica)
-  if (verifica.length > 0) {
-    return res.json({ 'pacienteCriado': false, "message":"Paciente com esse cpf já existe" });
+    return res.json({ pacienteCriado: true, message: 'Paciente criado com sucesso' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao criar paciente.' });
   }
- 
-  await db('pacientes').insert({
-    Cpf,
-    Nome,
-    Rg,
-    DataNasc,
-    Email,
-    Tel,
-    EstadoCivil,
-    Sexo,
-    NomeMae,
-    NomePai,
-    CorRaca,
-    PNE,
-    EnderecoTipo,
-    Cep,
-    Rua,
-    EndNumero,
-    EndComplemento,
-    Bairro,
-    Cidade
+});
+
+
+app.post('/pacientes/consulta', async (req, res) => {
+  const { CPF, Nome } = req.body;
+
+  if (CPF) {
+    try {
+      const result = await db('pacientes').where('cpf', CPF).select('*');
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Paciente não encontrado.' });
+      }
+      return res.json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao consultar paciente.' });
+    }
+  } else if (Nome) {
+    try {
+      const result = await db('pacientes').where('Nome', 'LIKE', `%${Nome}%`).select('*');
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Paciente não encontrado.' });
+      }
+      return res.json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao consultar paciente.' });
+    }
+  } else {
+    return res.status(400).json({ error: 'Informe CPF ou Nome para consulta.' });
+  }
+});
+
+
+// Encaminhamentos --------------------------------------------------------------------------------------------------------------
+
+app.post('encaminhamentos/criar/',async (req, res) => {
+   
+  console.log(req.body);
+  const { CPF, Data, Especialidade, Demanda, Status } = req.body;
+
+  await db('encaminhamentos').insert({
+    CPF, Data, Especialidade, Demanda, Status
   });
 
-  return res.json({ 'pacienteCriado': true, "message": "Paciente criado com sucesso" });
 });
 
+app.post('/encaminhamentos/atualizar', async (req, res) => {
+  console.log(req.body);
+  const { id, Data, Especialidade, Demanda, Status } = req.body;
+
+  // Create an object with only the fields that have values
+  const updateFields = {};
+  if (Data !== undefined) updateFields.Data = Data;
+  if (Especialidade !== undefined) updateFields.Especialidade = Especialidade;
+  if (Demanda !== undefined) updateFields.Demanda = Demanda;
+  if (Status !== undefined) updateFields.Status = Status;
+
+  if (Object.keys(updateFields).length === 0) {
+    return res.status(400).json({ error: 'Nenhum campo para atualizar.' });
+  }
+
+  try {
+    // Perform the update query
+    const updatedRows = await db('encaminhamentos')
+      .where('id', id)
+      .update(updateFields);
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ error: 'Encaminhamento não encontrado.' });
+    }
+
+    return res.json({ message: 'Encaminhamento atualizado com sucesso.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao atualizar o encaminhamento.' });
+  }
+});
 
 
 console.log("api escutando em http://localhost:"+port)
