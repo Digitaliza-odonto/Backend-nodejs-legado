@@ -45,27 +45,27 @@ app.use(express.json());
 //Pacientes ----------------------------------------------------------------------------------------------------------------------
 app.post('/pacientes/criar', async (req, res) => {
   try {
-    const { Cpf, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
+    const { CPF, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
 
-    const existingPatient = await db('pacientes').where('CPF', Cpf).select('*');
+    const existingPatient = await db('pacientes').where('CPF', CPF).select('*');
 
     if (existingPatient.length > 0) {
       return res.json({ pacienteCriado: false, message: 'Paciente com esse CPF já existe' });
     }
 
     await db('pacientes').insert({
-      Cpf, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade
+      CPF, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade
     });
 
     return res.json({ pacienteCriado: true, message: 'Paciente criado com sucesso' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Erro ao criar paciente.' });
+    return res.status(500).json({ message: 'Erro ao criar paciente.' });
   }
 });
 
 
-app.post('/pacientes/consulta', async (req, res) => {
+app.post('/pacientes/consultar', async (req, res) => {
   const { CPF, Nome } = req.body;
 
   if (CPF) {
@@ -95,17 +95,96 @@ app.post('/pacientes/consulta', async (req, res) => {
   }
 });
 
+app.post('/pacientes/atualizar', async (req, res) => {
+  console.log(req.body);
+  const { CPF, Nome, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
+
+  // Create an object with only the fields that have values
+  const updateFields = {};
+  if (Nome !== undefined) updateFields.Nome = Nome;
+  if (DataNasc !== undefined) updateFields.DataNasc = DataNasc;
+  if (Email !== undefined) updateFields.Email = Email;
+  if (Tel !== undefined) updateFields.Tel = Tel;
+  if (EstadoCivil !== undefined) updateFields.EstadoCivil = EstadoCivil;
+  if (Sexo !== undefined) updateFields.Sexo = Sexo;
+  if (NomeMae !== undefined) updateFields.NomeMae = NomeMae;
+  if (NomePai !== undefined) updateFields.NomePai = NomePai;
+  if (CorRaca !== undefined) updateFields.CorRaca = CorRaca;
+  if (PNE !== undefined) updateFields.PNE = PNE;
+  if (EnderecoTipo !== undefined) updateFields.EnderecoTipo = EnderecoTipo;
+  if (Cep !== undefined) updateFields.Cep = Cep;
+  if (Rua !== undefined) updateFields.Rua = Rua;
+  if (EndNumero !== undefined) updateFields.EndNumero = EndNumero;
+  if (EndComplemento !== undefined) updateFields.EndComplemento = EndComplemento;
+  if (Bairro !== undefined) updateFields.Bairro = Bairro;
+  if (Cidade !== undefined) updateFields.Cidade = Cidade;
+
+  if (Object.keys(updateFields).length === 0) {
+    return res.status(400).json({ error: 'Nenhum campo para atualizar.' });
+  }
+
+  try {
+    // Perform the update query
+    const updatedRows = await db('pacientes')
+      .where('CPF', CPF)
+      .update(updateFields);
+
+    if (updatedRows === 0) {
+      return res.status(404).json({ message: 'Paciente não encontrado.' });
+    }
+
+    return res.json({ message: 'Informações do paciente atualizadas com sucesso.' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro ao atualizar as informações do paciente.', error: error });
+  }
+});
 
 // Encaminhamentos --------------------------------------------------------------------------------------------------------------
+app.post('/encaminhamentos/consultar', async (req, res) => {
+  try {
+    const { CPF, Especialidade } = req.body;
 
-app.post('encaminhamentos/criar/',async (req, res) => {
+    let query = db('encaminhamentos').select('*');
+
+    
+      query = query.where('CPF', CPF);
+    
+
+    if (Especialidade) {
+      query = query.andWhere('Especialidade', Especialidade);
+    }
+
+    const result = await query;
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Nenhum encaminhamento encontrado.' });
+    }
+
+    return res.json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao consultar encaminhamentos.' });
+  }
+});
+
+
+app.post('/encaminhamentos/criar',async (req, res) => {
    
   console.log(req.body);
   const { CPF, Data, Especialidade, Demanda, Status } = req.body;
 
-  await db('encaminhamentos').insert({
-    CPF, Data, Especialidade, Demanda, Status
-  });
+  try {
+    await db('encaminhamentos').insert({
+      CPF, Data, Especialidade, Demanda, Status
+    });
+
+    return res.json({ message: "Encaminhamento criado com sucesso" });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao criar o encaminhamento.', error: error });
+  }
+
 
 });
 
@@ -131,13 +210,13 @@ app.post('/encaminhamentos/atualizar', async (req, res) => {
       .update(updateFields);
 
     if (updatedRows === 0) {
-      return res.status(404).json({ error: 'Encaminhamento não encontrado.' });
+      return res.status(404).json({ message: 'Encaminhamento não encontrado.' });
     }
 
     return res.json({ message: 'Encaminhamento atualizado com sucesso.' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Erro ao atualizar o encaminhamento.' });
+    return res.status(500).json({ message: 'Erro ao atualizar o encaminhamento.', error:error });
   }
 });
 
