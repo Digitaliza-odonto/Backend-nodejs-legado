@@ -172,11 +172,11 @@ app.post('/encaminhamentos/consultar', async (req, res) => {
 app.post('/encaminhamentos/criar',async (req, res) => {
    
   console.log(req.body);
-  const { CPF, Data, Especialidade, Demanda, Status } = req.body;
+  const { CPF, Data, Especialidade, Demanda, Status, Curso } = req.body;
 
   try {
     await db('encaminhamentos').insert({
-      CPF, Data, Especialidade, Demanda, Status
+      CPF, Data, Especialidade, Demanda, Status, Curso
     });
 
     return res.json({ message: "Encaminhamento criado com sucesso" });

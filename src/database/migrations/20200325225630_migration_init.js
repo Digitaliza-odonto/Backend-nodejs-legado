@@ -2,6 +2,7 @@ exports.up = function(knex) {
     return knex.schema.createTable('pacientes', function (table) {
         table.increments('id').primary();
         table.string('CPF').notNullable();
+        table.string('CNS');
         table.string('Nome');
         table.string('Rg');
         table.string('DataNasc');
@@ -22,8 +23,9 @@ exports.up = function(knex) {
         table.string('Cidade');
     }).createTable('encaminhamentos', function (table) {
         table.increments('id').primary();
-        table.string('CPF').references('CPF').inTable('pacientes').onDelete('CASCADE');
-        table.string('Data');
+        table.string('CPF').references('CPF').inTable('pacientes').notNullable().onDelete('CASCADE');
+        table.string('Data').notNullable();
+        table.string('Curso');
         table.string('Especialidade');
         table.string('Demanda');
         table.string('Status');
