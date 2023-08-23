@@ -55,9 +55,21 @@ const getApiUrl = () => {
       return sendRequest(url, 'POST', data);
     },
   };
+
+const usuarios = {
+  login: async (data) => {
+    const url = `${getApiUrl()}/usuarios/login`;
+    return sendRequest(url, 'POST', data);
+  },
+  criar: async (data) => {
+    const url = `${getApiUrl()}/usuarios/criar`;
+    return sendRequest(url, 'POST', data);
+  }
+}
   
-  module.exports = {
+window.api = {
     pacientes,
     encaminhamentos,
+    usuarios
   };
   

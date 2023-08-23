@@ -44,6 +44,8 @@ app.use(express.json());
  
 //Pacientes ----------------------------------------------------------------------------------------------------------------------
 app.post('/pacientes/criar', async (req, res) => {
+  console.log("criar paciente");
+  console.log(req.body);
   try {
     const { CPF, Nome, Rg, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
 
@@ -170,6 +172,8 @@ app.post('/encaminhamentos/consultar', async (req, res) => {
 
 
 app.post('/encaminhamentos/criar',async (req, res) => {
+  console.log("criar encaminhamento");
+  console.log(req.body);
    
   console.log(req.body);
   const { CPF, Data, Especialidade, Demanda, Status, Curso } = req.body;
@@ -217,6 +221,46 @@ app.post('/encaminhamentos/atualizar', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao atualizar o encaminhamento.', error:error });
+  }
+});
+
+
+// Usuários ----------------------------------------------------------------------------------------------------------------------
+app.post('/usuarios/login', async (req, res) => {
+  const { CPF } = req.body;
+
+  try {
+    const result = await db('usuarios').where('CPF', CPF).select('*');
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+    return res.json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao consultar usuário.' });
+  }
+});
+
+app.post('/usuarios/criar', async (req, res) => {
+  console.log("criar usuario");
+  console.log(req.body);
+  try {
+    const { Matricula, Nome, Tipo } = req.body;
+
+    const existingUser = await db('usuarios').where('Matricula', Matricula).select('*');
+
+    if (existingUser.length > 0) {
+      return res.json({ usuarioCriado: false, message: 'Usuário com essa Matricula já existe' });
+    }
+
+    await db('usuarios').insert({
+      Matricula, Nome, Tipo
+    });
+
+    return res.json({ usuarioCriado: true, message: 'Usuário criado com sucesso' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro ao criar usuário.' });
   }
 });
 

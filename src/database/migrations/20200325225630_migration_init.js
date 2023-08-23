@@ -29,7 +29,13 @@ exports.up = function(knex) {
         table.string('Especialidade');
         table.string('Demanda');
         table.string('Status');
+        table.string('Observacoes');
         
+    }).createTable('usuarios', function (table) {
+        table.increments('id').primary();
+        table.string('Matricula').notNullable();
+        table.string('Nome').notNullable();
+        table.string('Tipo').notNullable();
     })
 };
 
@@ -37,4 +43,5 @@ exports.up = function(knex) {
 exports.down = function(knex) {
     return knex.schema
     .dropTable("pacientes")
-    .dropTable("encaminhamentos");};
+    .dropTable("encaminhamentos")
+    .dropTable("usuarios");};
