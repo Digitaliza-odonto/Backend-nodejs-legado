@@ -39,6 +39,10 @@ const getApiUrl = () => {
       const url = `${getApiUrl()}/pacientes/atualizar`;
       return sendRequest(url, 'POST', data);
     },
+    doAluno: async (data) => {
+      const url = `${getApiUrl()}/pacientes/consultar/aluno`;
+      return sendRequest(url, 'POST', data);
+    }
   };
   
   const encaminhamentos = {

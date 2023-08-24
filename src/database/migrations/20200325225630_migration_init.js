@@ -30,12 +30,14 @@ exports.up = function(knex) {
         table.string('Demanda');
         table.string('Status');
         table.string('Observacoes');
+        table.string('Complexidade');
         
     }).createTable('usuarios', function (table) {
         table.increments('id').primary();
         table.string('Matricula').notNullable();
         table.string('Nome').notNullable();
         table.string('Tipo').notNullable();
+        table.string('Pacientes')
     })
 };
 
