@@ -97,33 +97,6 @@ app.post('/pacientes/consultar', async (req, res) => {
   }
 });
 
-app.post('/pacientes/consultar/aluno', async (req, res) => {
-  console.log("consultar pacientes do aluno");
-  console.log(req.body);
-  // recebe a matricula do aluno e retorna os pacientes que ele atende
-  const { Matricula } = req.body;
-  // onsulta na tabela de usuarios o campo pacientes
-  try {
-    const result = await db('usuarios').where('Matricula', Matricula).select('*');
-    if (result.length === 0) {
-      return res.status(404).json({ error: 'Usuário não encontrado.' });
-    }
-    console.log(result);
-    const pacientes = JSON.parse(result[0].Pacientes);
-    console.log(pacientes);
-    for (let i = 0; i < pacientes.length; i++) {
-      let CPF = pacientes[i];
-      const pacienteResult = await db('pacientes').where('CPF', CPF).select('*');
-      pacientes[i] = pacienteResult[0];
-    }
-    console.log(pacientes);
-    return res.json(pacientes);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Erro ao consultar pacientes.' });
-  }
-});
-
 app.post('/pacientes/atualizar', async (req, res) => {
   console.log(req.body);
   const { CPF, Nome, DataNasc, Email, Tel, EstadoCivil, Sexo, NomeMae, NomePai, CorRaca, PNE, EnderecoTipo, Cep, Rua, EndNumero, EndComplemento, Bairro, Cidade } = req.body;
@@ -254,10 +227,10 @@ app.post('/encaminhamentos/atualizar', async (req, res) => {
 
 // Usuários ----------------------------------------------------------------------------------------------------------------------
 app.post('/usuarios/login', async (req, res) => {
-  const { CPF } = req.body;
+  const { Matricula } = req.body;
 
   try {
-    const result = await db('usuarios').where('CPF', CPF).select('*');
+    const result = await db('usuarios').where('Matricula', Matricula).select('*');
     if (result.length === 0) {
       return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
@@ -288,6 +261,33 @@ app.post('/usuarios/criar', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Erro ao criar usuário.' });
+  }
+});
+// Alunos ----------------------------------------------------------------------------------------------------------------------
+app.post('/alunos/pacientes', async (req, res) => {
+  console.log("consultar pacientes do aluno");
+  console.log(req.body);
+  // recebe a matricula do aluno e retorna os pacientes que ele atende
+  const { Matricula } = req.body;
+  // onsulta na tabela de usuarios o campo pacientes
+  try {
+    const result = await db('usuarios').where('Matricula', Matricula).select('*');
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+    console.log(result);
+    const pacientes = JSON.parse(result[0].Pacientes);
+    console.log(pacientes);
+    for (let i = 0; i < pacientes.length; i++) {
+      let CPF = pacientes[i];
+      const pacienteResult = await db('pacientes').where('CPF', CPF).select('*');
+      pacientes[i] = pacienteResult[0];
+    }
+    console.log(pacientes);
+    return res.json(pacientes);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao consultar pacientes.' });
   }
 });
 
