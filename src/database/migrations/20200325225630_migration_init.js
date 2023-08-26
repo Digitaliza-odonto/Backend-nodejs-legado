@@ -38,6 +38,16 @@ exports.up = function(knex) {
         table.string('Nome').notNullable();
         table.string('Tipo').notNullable();
         table.string('Pacientes')
+    }).createTable('disciplinas', function (table) {
+        table.increments('id').primary();
+        table.string('Nome').notNullable();
+        table.string('turma').notNullable();
+        table.string('periodo').notNullable();
+        table.string('alunos').notNullable();
+        table.string('ano').notNullable();
+        table.string('curso').notNullable();
+        table.string('codigo').notNullable();
+        table.string('datadecadastro').notNullable();
     })
 };
 
@@ -46,4 +56,7 @@ exports.down = function(knex) {
     return knex.schema
     .dropTable("pacientes")
     .dropTable("encaminhamentos")
-    .dropTable("usuarios");};
+    .dropTable("usuarios")
+    .dropTable("disciplinas")
+    
+    ;};

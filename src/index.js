@@ -291,6 +291,67 @@ app.post('/alunos/pacientes', async (req, res) => {
   }
 });
 
+// Vincolos ----------------------------------------------------------------------------------------------------------------------
+app.post('/vincolos/paciente/aluno', async (req, res) => {
+  console.log("vincular paciente a aluno");
+  console.log(req.body);
+  // recebe a matricula do aluno e o cpf do paciente 
+  const { Matricula, CPF } = req.body;
+  // adiciona o cpf do paciente no campo pacientes do aluno
+  try {
+    const result = await db('usuarios').where('Matricula', Matricula).select('*');
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    } else {
+      const pacientes = JSON.parse(result[0].Pacientes);
+      pacientes.push(CPF);
+      await db('usuarios').where('Matricula', Matricula).update({ Pacientes: JSON.stringify(pacientes) });
+      return res.json({ message: 'Paciente vinculado com sucesso.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao vincular paciente.' });
+  }
+});
+
+// Disciplinas ----------------------------------------------------------------------------------------------------------------------
+app.post('/disciplinas/criar', async (req, res) => {
+  console.log("criar diciplina");
+  console.log(req.body);
+  try {
+    const { Nome, turma, periodo, alunos, ano, curso, codigo, datadecadastro } = req.body; 
+// verifica se a diciplina ja existe no mesmo periodo e turma
+    const existingDiciplina = await db('disciplinas').where('Nome', Nome).andWhere('turma', turma).andWhere('periodo', periodo).select('*');
+
+    if (existingDiciplina.length > 0) {
+      return res.json({ diciplinaCriada: false, message: 'Diciplina já existe' });
+    }
+
+    await db('disciplinas').insert({
+      Nome, turma, periodo, alunos, ano, curso, codigo, datadecadastro
+    });
+
+    return res.json({ diciplinaCriada: true, message: 'Diciplina criada com sucesso' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Erro ao criar diciplina.' });
+  }
+});
+
+app.post('/disciplinas/consultar', async (req, res) => {
+  // retorna todas as disciplinas
+  try {
+    const result = await db('disciplinas').select('*');
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Nenhuma disciplinas encontrada.' });
+    }
+    return res.json(result);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Erro ao consultar disciplinas.' });
+  }
+});
+
 
 console.log("api escutando em http://localhost:"+port)
 server.listen(port);
